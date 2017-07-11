@@ -4,17 +4,7 @@ import sys, argparse, struct, time
 from socket import *
 from signal import *
 import binascii
-import array
-
-UDP_PORT = 2112
-
-clients = {}
-
-def int_handler (sig, frame):
-    print ("interrupted!")
-    node.stop ()
-    sys.exit (0)
-
+from enum import IntEnum
 
 # -- ledSpeak lib --
 
@@ -52,26 +42,25 @@ def int_handler (sig, frame):
 #   32 bit length (bytes)
 #   24 bit raw data (eg 100 LEDs = 24bits * 100 = 240 bytes)
 
-def enum(**enums):
-    return type('Enum', (), enums)
-
 class ledSpeakPacket:
+    class MSG_TYPE(IntEnum):
+        PANIC=0x00
+        CONFIG_SELECT=0x01
+        CONFIG_LENGTH=0x02
+        CONFIG_SCALING=0x03
+        CONFIG_STEP_SIZE=0x04
+        CONFIG_STEP_MOD=0x05
+        CONFIG_STRING_FX=0x06
+        CONFIG_PIXEL_FX=0x07
+        CONFIG_STRING_OPTION=0x08
+        FB_RAW=0x10
+        FB_PACKED=0x11
+        FB_DELTA=0x12
+        FB_TIMED=0x13
+
     def __init__ (self, verbose=False):
         self.flags = 0
         self.seq = 0
-        self.MSG_TYPE = enum (PANIC=0x00,
-                         CONFIG_SELECT=0x01,
-                         CONFIG_LENGTH=0x02,
-                         CONFIG_SCALING=0x03,
-                         CONFIG_STEP_SIZE=0x04,
-                         CONFIG_STEP_MOD=0x05,
-                         CONFIG_STRING_FX=0x06,
-                         CONFIG_PIXEL_FX=0x07,
-                         CONFIG_STRING_OPTION=0x08,
-                         FB_RAW=0x10,
-                         FB_PACKED=0x11,
-                         FB_DELTA=0x12,
-                         FB_TIMED=0x13)
 
     def setFlags (more=False):
         if more: self.flags |= 0x01
@@ -209,4 +198,9 @@ def main():
         node.stop()
 
 if __name__ == '__main__':
+    def int_handler (sig, frame):
+        print ("interrupted!")
+        node.stop ()
+        sys.exit (0)
+
     main()
