@@ -123,9 +123,9 @@ class ledSpeakNode:
         self.UDP_BUF_SIZE = 2048
 
         if self.drv == "p9813":
-            self.packet = ledSpeakPacketP9813()
+            self.packetClass = ledSpeakPacketP9813
         elif self.drv == "ws2812":
-            self.packet = ledSpeakPacketWs2812()
+            self.packetClass = ledSpeakPacketWs2812
         else:
             print ("invalid driver type: " + drv)
             sys.exit(1)
@@ -137,12 +137,14 @@ class ledSpeakNode:
         self.sock.close()
 
     def sendRawFrame (self, pixels):
-        packetData = self.packet.packRawFrame(pixels)
+        packet = self.packetClass()
+        packetData = packet.packRawFrame(pixels)
         sent = self.sock.sendto(packetData, (self.host, self.port))
         if self.verbose: print(binascii.hexlify(packetData))
 
     def recvPacket (self):
         self.packetData, (addr, port) = self.sock.recvfrom (self.UDP_BUF_SIZE)
+        self.packet = self.packetClass()
         return (addr, port)
 
     def decodePacket (self):
